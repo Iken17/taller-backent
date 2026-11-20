@@ -2,12 +2,36 @@ import TransactionEntity from "../../domain/entities/transaction.entity.js";
 import AuditEntity from "../../domain/entities/audit.entity.js";
 
 export default class TransactionService {
-    constructor(transactionRepository, currencyRepository, categoryRepository, budgetRepository = null, auditRepository = null) {
+    constructor(
+        transactionRepository,
+        currencyRepository,
+        categoryRepository,
+        budgetRepository = null,
+        auditRepository = null,
+        walletRepository = null
+    ) {
         this.transactionRepository = transactionRepository;
         this.currencyRepository = currencyRepository;
         this.categoryRepository = categoryRepository;
         this.budgetRepository = budgetRepository;
         this.auditRepository = auditRepository;
+        this.walletRepository = walletRepository;
+    }
+
+    async #validateWallet(walletId, userId) {
+        if (walletId === undefined || walletId === null || walletId === "") {
+            return null;
+        }
+        if (this.walletRepository) {
+            const wallet = await this.walletRepository.findById(walletId);
+            if (!wallet) {
+                throw new Error("Wallet not found");
+            }
+            if (String(wallet.userId) !== String(userId)) {
+                throw new Error("Unauthorized: Wallet does not belong to user");
+            }
+        }
+        return walletId;
     }
 
     async createTransaction(data) {
@@ -26,6 +50,8 @@ export default class TransactionService {
             throw new Error(`Category type mismatch: category is ${category.type}`);
         }
 
+        const validatedWalletId = await this.#validateWallet(data.walletId, data.userId);
+
         const txDate = data.date || new Date().toISOString().split("T")[0];
         const currencyCode = (data.currency || "BOB").toUpperCase();
 
@@ -36,6 +62,7 @@ export default class TransactionService {
 
         const transaction = new TransactionEntity({
             ...data,
+            walletId: validatedWalletId,
             currency: currencyCode,
             date: txDate,
             exchangeRate: rateRecord.exchangeRate,
@@ -97,6 +124,11 @@ export default class TransactionService {
             throw new Error("Unauthorized: You can only update your own transactions");
         }
 
+        let nextWalletId = existing.walletId ?? null;
+        if ("walletId" in data) {
+            nextWalletId = await this.#validateWallet(data.walletId, userId);
+        }
+
         const txDate = data.date || existing.date;
         const currencyCode = (data.currency || existing.currency).toUpperCase();
         const amount = data.amount !== undefined ? Number(data.amount) : Number(existing.amount);
@@ -108,6 +140,7 @@ export default class TransactionService {
 
         const updatedPayload = {
             ...data,
+            walletId: nextWalletId,
             amount,
             currency: currencyCode,
             date: txDate,
@@ -152,6 +185,36 @@ export default class TransactionService {
         }
 
         return { message: "Transaction deleted successfully" };
+    }
+
+    async getPublicTransactionById(id) {
+        const tx = await this.transactionRepository.findById(id);
+        if (!tx) {
+            const error = new Error("Transaction not found");
+            error.statusCode = 404;
+            throw error;
+        }
+        if (tx.isPrivate) {
+            const error = new Error("Access denied: This transaction is private");
+            error.statusCode = 403;
+            throw error;
+        }
+
+        // devolvemos el dato de la transacción pública, sin exponer información sensible
+        return {
+            id: tx.id,
+            type: tx.type,
+            amount: tx.amount,
+            currency: tx.currency,
+            exchangeRate: tx.exchangeRate,
+            exchangeRateDate: tx.exchangeRateDate,
+            convertedAmount: tx.convertedAmount,
+            description: tx.description,
+            date: tx.date,
+            categoryId: tx.categoryId,
+            walletId: tx.walletId ?? null,
+            isPrivate: Boolean(tx.isPrivate)
+        };
     }
 }
 
