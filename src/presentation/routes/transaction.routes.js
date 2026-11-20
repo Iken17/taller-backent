@@ -27,44 +27,49 @@ const transactionController = new TransactionController(transactionService);
 const router = Router();
 
 /**
- * @swagger
- * /transactions:
- *   post:
- *     summary: Registrar un nuevo ingreso o egreso (vinculado al tipo de cambio de la fecha)
- *     tags: [Transactions]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [type, amount, categoryId]
- *             properties:
- *               type:
- *                 type: string
- *                 enum: [INCOME, EXPENSE]
- *                 example: "EXPENSE"
- *               amount:
- *                 type: number
- *                 example: 100
- *               currency:
- *                 type: string
- *                 example: "USD"
- *               description:
- *                 type: string
- *                 example: "Pago de licencia de software"
- *               date:
- *                 type: string
- *                 example: "2026-11-08"
- *               categoryId:
- *                 type: integer
- *                 example: 3
- *     responses:
- *       201:
- *         description: Transacción creada y convertida con el tipo de cambio del día
- */
+* @swagger
+* /transactions:
+*   post:
+*     summary: Registrar un nuevo ingreso o egreso (vinculado al tipo de cambio de la fecha)
+*     tags: [Transactions]
+*     security:
+*       - bearerAuth: []
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             required: [type, amount, categoryId]
+*             properties:
+*               type:
+*                 type: string
+*                 enum: [INCOME, EXPENSE]
+*                 example: "EXPENSE"
+*               amount:
+*                 type: number
+*                 example: 100
+*               currency:
+*                 type: string
+*                 example: "USD"
+*               description:
+*                 type: string
+*                 example: "Pago de licencia de software"
+*               date:
+*                 type: string
+*                 example: "2026-11-08"
+*               categoryId:
+*                 type: integer
+*                 example: 3
+*               walletId:
+*                 type: integer
+*                 nullable: true
+*                 description: ID opcional de la billetera o cuenta financiera asociada
+*                 example: 1
+*     responses:
+*       201:
+*         description: Transacción creada y convertida con el tipo de cambio del día
+*/
 router.post("/", authMiddleware, transactionController.createTransaction);
 
 /**

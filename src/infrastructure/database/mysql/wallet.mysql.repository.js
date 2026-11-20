@@ -1,11 +1,13 @@
 import { DataTypes } from "sequelize";
 import sequelize from "./connection.js";
 
+export const ALLOWED_WALLET_TYPES = ["BANK", "EFEC", "TARJETADEBITO"];
+
 export const WalletModel = sequelize.define("Wallet", {
     name: { type: DataTypes.STRING, allowNull: false },
-    type: { type: DataTypes.STRING, allowNull: false }, // TIPO DE PAGO
+    type: { type: DataTypes.ENUM(...ALLOWED_WALLET_TYPES), allowNull: false },
     balance: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },
-    currency: { type: DataTypes.STRING, allowNull: true }, // TIPO DE MONEDA
+    currency: { type: DataTypes.STRING, allowNull: true },
     userId: { type: DataTypes.STRING, allowNull: false }
 }, { timestamps: true });
 

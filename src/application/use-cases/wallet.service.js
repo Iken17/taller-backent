@@ -1,5 +1,7 @@
 import WalletEntity from "../../domain/entities/wallet.entity.js";
 
+const ALLOWED_WALLET_TYPES = ["BANK", "EFEC", "TARJETADEBITO"];
+
 export default class WalletService {
     constructor(walletRepository) {
         this.walletRepository = walletRepository;
@@ -8,6 +10,11 @@ export default class WalletService {
     async createWallet(data) {
         if (!data.name || !data.type) {
             throw new Error("Name and type are required");
+        }
+        if (!ALLOWED_WALLET_TYPES.includes(data.type)) {
+            throw new Error(
+                `Invalid wallet type. Allowed values are: ${ALLOWED_WALLET_TYPES.join(", ")} (BANK=Banco, EFEC=Efectivo, TARJETADEBITO=Tarjeta de débito)`
+            );
         }
         if (!data.userId) {
             throw new Error("User ID is required");

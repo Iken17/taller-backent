@@ -46,7 +46,8 @@ router.get("/", authMiddleware, walletController.getWallets);
  *                 example: "Cuenta BNB"
  *               type:
  *                 type: string
- *                 example: "BANK"
+ *                 enum: [BANK, EFEC, TARJETADEBITO]
+ *                 example: "BANK,EFEC,TARJETADEBITO"
  *               balance:
  *                 type: number
  *                 example: 500
