@@ -3,9 +3,9 @@ import sequelize from "./connection.js";
 
 export const WalletModel = sequelize.define("Wallet", {
     name: { type: DataTypes.STRING, allowNull: false },
-    type: { type: DataTypes.STRING, allowNull: false }, // ej: "CASH", "BANK", "DEBIT_CARD"
+    type: { type: DataTypes.STRING, allowNull: false }, // TIPO DE PAGO
     balance: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },
-    currency: { type: DataTypes.STRING, allowNull: true }, // ej: "BOB", "USD"
+    currency: { type: DataTypes.STRING, allowNull: true }, // TIPO DE MONEDA
     userId: { type: DataTypes.STRING, allowNull: false }
 }, { timestamps: true });
 
