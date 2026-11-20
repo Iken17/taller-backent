@@ -1,9 +1,11 @@
-export const roleMiddleware = (rolesPermited) => {
+export const roleMiddleware = (rolesPermited = []) => {
     return (req, res, next) => {
-        if (!req.user || !rolesPermited.includes(req.user.role)) {
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized: user not authenticated" });
+        }
+        if (!rolesPermited.includes(req.user.role)) {
             return res.status(403).json({ error: "Forbidden: insufficient permissions" });
         }
         next();
     };
 };
-

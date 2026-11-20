@@ -200,7 +200,6 @@ export default class TransactionService {
             throw error;
         }
 
-        // devolvemos el dato de la transacción pública, sin exponer información sensible
         return {
             id: tx.id,
             type: tx.type,
